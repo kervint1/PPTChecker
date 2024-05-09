@@ -25,5 +25,6 @@ def save_texts_to_excel(texts, filename):
                 df.to_excel(writer, sheet_name=f'{os.path.splitext(file_name)[0]}', index=False)
 
 
+file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
-# print(extract_text_from_pptx_by_slide(r"C:\Users\iniad\Documents\adpro\テスト4月4日.pptx"))
+print(extract_text_from_pptx_by_slide(file_path1))

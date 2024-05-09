@@ -1,2 +1,4 @@
 /build/
 /dist/
+/testocr/
+/__pycache__/
