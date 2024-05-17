@@ -110,8 +110,21 @@ preprocessed_text, preprocessed_image_path = preprocess_image(image_path)
 preprocessed_text, preprocessed_image_path
 
 # 前処理された画像からテキストを抽出する
-preprocessed_text = preprocess_image(r'C:\Users\iniad\Documents\adpro\debugpictures\slide_0_shape_0.png')
-print(preprocessed_text)
+# preprocessed_text = preprocess_image(r'C:\Users\iniad\Documents\adpro\debugpictures\slide_0_shape_0.png')
+# print(preprocessed_text)
 
-sharpened_image_path = enhance_sharpness(preprocessed_image_path, 2.0)
-print(sharpened_image_path)
+# sharpened_image_path = enhance_sharpness(preprocessed_image_path, 2.0)
+# print(sharpened_image_path)
+
+def checkplace(filepath):
+    prs = Presentation(filepath)
+    slide_number = 0
+
+    for slide in prs.slides:
+        shapenumber = 0
+        slide_number+=1
+        for shape in slide.shapes:
+            shapenumber +=1
+            print(slide_number,shapenumber,shape.top.pt,shape.left.pt)
+
+checkplace(file_path1)

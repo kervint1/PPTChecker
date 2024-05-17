@@ -13,17 +13,19 @@ def extract_text_from_pptx_by_slide(file_path):
         slides_texts.append(slide_texts)
     return slides_texts
 
-def classify_slide(slide):
+def classify_slide(slide,top_list,left_list):
     """
     スライドを分類する関数。表紙、月のスライド、内容のスライドのいずれかに分類。
     """
     objects = slide.shapes
+    permissible = 5
+
     for shape in objects:
-        if shape.top <= 100 and shape.bottom >= 200:
+        if abs(shape.top.pt-top_list[0]) < permissible and abs(shape.left.pt-left_list[0]) < permissible:
             return 'cover'
-        elif shape.top <= 200 and shape.bottom >= 200:
+        elif abs(shape.top.pt-top_list[1]) < permissible and abs(shape.left.pt-left_list[1]) < permissible:
             return 'month'
-        elif shape.top <= 100 and shape.bottom >= 300:
+        elif abs(shape.top.pt-top_list[2]) < permissible and abs(shape.left.pt-left_list[2]) < permissible:
             return 'content'
     return None
 
@@ -88,27 +90,56 @@ def extract_content_data(slide):
         'error_message': error_message
     }])
 
-def summarize_slides(slides):
+def summarize_slides(file_path):
     """
     スライドを分類し、それぞれのデータを取得してpandasでデータフレームにまとめる関数。
     """
+    slides = Presentation(file_path).slides
+
+    #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx
+    # 上記のpptでpositionを大まかに決める
+    # 1 4,2 6,3 6
+    LV_position_top = [474.2636220472441,199.1259842519685,3.9204724409448817]
+    LV_position_left = [311.2373228346457,111.10039370078741,21.474724409448818]
+    permissible = 20
+    standard_top = []
+    standard_left = []
+    # そのpptの基準を決める
+    for i in range(0,3):
+        for shape in slides[i].shapes:
+            if (abs(shape.left.pt-LV_position_left[i])<permissible and
+                abs(shape.top.pt-LV_position_top[i])<permissible):
+                standard_top.append(shape.top.pt)
+                standard_left.append(shape.left.pt)
+                break
+            else:
+                None
+
+    print(standard_top,standard_left)
     data_frames = []
 
     for slide in slides:
-        slide_type = classify_slide(slide)
+        slide_type = classify_slide(slide,standard_top,standard_left)
         if slide_type == 'cover':
-            df = extract_cover_data(slide)
+            # df = extract_cover_data(slide)
+            print(0)
         elif slide_type == 'month':
-            df = extract_month_data(slide)
+            # df = extract_month_data(slide)
+            print(1)
         elif slide_type == 'content':
-            df = extract_content_data(slide)
+            # df = extract_content_data(slide)
+            print(2)
         else:
-            df = pd.DataFrame([{
-                'category_number': 4,
-                'account_name': None,
-                'error_message': 'No slide content'
-            }])
-        data_frames.append(df)
+            print(3)
+            # df = pd.DataFrame([{
+            #     'category_number': 4,
+            #     'account_name': None,
+            #     'error_message': 'No slide content'
+            # }])
+        # data_frames.append(df)
+        
+    
+    return 0
 
     result_df = pd.concat(data_frames, ignore_index=True)
     return result_df
@@ -127,5 +158,7 @@ def save_texts_to_excel(texts, filename):
 
 
 file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
+file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
-print(extract_text_from_pptx_by_slide(file_path1))
+# print(extract_text_from_pptx_by_slide(file_path1))
+summarize_slides(file_path1)
