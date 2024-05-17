@@ -161,4 +161,4 @@ file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッ
 file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path1))
-summarize_slides(file_path1)
+summarize_slides(file_path2)
