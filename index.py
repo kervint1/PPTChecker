@@ -1,6 +1,7 @@
 from pptx import Presentation
 import pandas as pd
 import os
+import re
 
 def extract_text_from_pptx_by_slide(file_path):
     slides_texts = []
@@ -29,78 +30,153 @@ def classify_slide(slide,top_list,left_list):
             return 'content'
     return None
 
+def check_position(shape,permissible,cover_position_top,cover_position_left):
+    if (abs(shape.top.pt-cover_position_top) < permissible and 
+        abs(shape.left.pt-cover_position_left) < permissible):
+        return True
+    else :
+        return False
+
 def extract_cover_data(slide):
     """
     表紙のスライドからデータを抽出する関数。
     """
     objects = slide.shapes
-    permissible = 5
-    cover_position_top = []
-    cover_position_left = []
-
+    permissible = 20
+    cover_position_top = [199,233]
+    cover_position_left = [191,109]
+    account_name = None
+    message_or_voom = None
+    error_message = None
     for shape in objects:
-        if abs(shape.top.pt-cover_position_top[0]) < permissible and abs(shape.left.pt-cover_position_left[0]) < permissible:
+        if check_position(shape,permissible,cover_position_top[0],cover_position_left[0]):
             account_name = shape.text
-        elif abs(shape.top.pt-cover_position_top[1]) < permissible and abs(shape.left.pt-cover_position_left[1]) < permissible:
-            error_message = "no errors"
-    
-
+        elif check_position(shape,permissible,cover_position_top[1],cover_position_left[1]):
+            if re.search(r"メッセージ",shape.text):
+                message_or_voom = 1
+            elif re.search(r"VOOM",shape.text):
+                message_or_voom = 2
+        if account_name and message_or_voom:
+            break
+    if not(account_name and message_or_voom):
+        error_message = "オブジェクトが基準値より20pt離れている"
+    print(account_name,message_or_voom,error_message)
     # 実際の実装はここに
-    account_name = "example_account"
-    error_message = "no errors"
-    return pd.DataFrame([{
-        'category_number': 1,
-        'account_name': account_name,
-        'error_message': error_message
-    }])
+    # return pd.DataFrame([{
+    #     'category_number': 1,
+    #     'account_name': account_name,
+    #     'message_or_voom': message_or_voom,        
+    #     'error_message': error_message
+    # }])
 
 def extract_month_data(slide):
     """
     月のスライドからデータを抽出する関数。
     """
     # 実際の実装はここに
-    account_name = "example_account"
-    year = 2023
-    month = 5
-    error_message = "no errors"
-    return pd.DataFrame([{
-        'category_number': 2,
-        'account_name': account_name,
-        'year': year,
-        'month': month,
-        'error_message': error_message
-    }])
+    objects = slide.shapes
+    permissible = 5
+    cover_position_top = [199,233,283]
+    cover_position_left = [191,109,111]
+    account_name = None
+    year = None
+    month = None
+    error_message = None
+
+    for shape in objects:
+        if check_position(shape,permissible,cover_position_top[0],cover_position_left[0]):
+            account_name = shape.text
+        elif check_position(shape,permissible,cover_position_top[1],cover_position_left[1]):
+            if re.search(r"メッセージ",shape.text):
+                message_or_voom = 1
+            elif re.search(r"VOOM",shape.text):
+                message_or_voom = 2
+        elif check_position(shape,permissible,cover_position_top[2],cover_position_left[2]):
+            match = re.search(r"(\d{4})年(\d{1,2})月", shape.text)
+            if match:
+                year = int(match.group(1))
+                month = int(match.group(2))
+    if not(account_name and message_or_voom):
+        error_message = "オブジェクトが基準値より20pt離れている"
+    print(account_name,message_or_voom,year,month,error_message)
+
+    # return pd.DataFrame([{
+    #     'category_number': 2,
+    #     'account_name': account_name,
+    #     'message_or_voom': message_or_voom,  
+    #     'year': year,
+    #     'month': month,
+    #     'error_message': error_message
+    # }])
 
 def extract_content_data(slide):
     """
     内容のスライドからデータを抽出する関数。
     """
     # 実際の実装はここに
-    account_name = "example_account"
-    message_or_voom = "message"
-    month = 5
-    day = 15
-    datetime = "2023-05-15 10:00"
-    ad_presence = True
+    objects = slide.shapes
+    permissible = 5
+    cover_position_top = [145,199,]
+    cover_position_left = [256,191,]
+    account_name = None
+    message_or_voom = None
+    month = None
+    day = None
+    time = None
+    ad_presence = None
     ad_account_name = "ad_account"
     lp_count = 3
     lp_number_count = 5
     arrow_presence = False
     error_message = "no errors"
-    return pd.DataFrame([{
-        'category_number': 3,
-        'account_name': account_name,
-        'message_or_voom': message_or_voom,
-        'month': month,
-        'day': day,
-        'datetime': datetime,
-        'ad_presence': ad_presence,
-        'ad_account_name': ad_account_name,
-        'lp_count': lp_count,
-        'lp_number_count': lp_number_count,
-        'arrow_presence': arrow_presence,
-        'error_message': error_message
-    }])
+
+    for shape in objects:
+        if check_position(shape,permissible,cover_position_top[0],cover_position_left[0]):  
+            pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況"
+            match = re.search(pattern, shape.text)
+            
+            if match:
+                account_name = match.group(1).strip()
+                message_voom = match.group(2).strip()
+                if re.search(r"メッセージ",message_voom):
+                    message_or_voom = 1
+                elif re.search(r"VOOM",message_voom):
+                    message_or_voom = 2
+        elif check_position(shape,permissible,cover_position_top[1],cover_position_left[1]):
+            # 正規表現パターンを定義
+            pattern = r"(\d{1,2})月(\d{1,2})日.*?(\d{1,2}:\d{2})"
+            
+            # パターンにマッチするテキストを検索
+            match = re.search(pattern, shape.text)
+            
+            if match:
+                month = int(match.group(1))
+                day = int(match.group(2))
+                time = match.group(3)
+        elif check_position(shape,permissible,cover_position_top[2],cover_position_left[2]):
+            match = re.search(r"(\d{4})年(\d{1,2})月", shape.text)
+            if match:
+                year = int(match.group(1))
+                month = int(match.group(2))
+    if not(account_name and message_or_voom):
+        error_message = "オブジェクトが基準値より20pt離れている"
+    print(account_name,message_or_voom,year,month,error_message)
+
+
+    # return pd.DataFrame([{
+    #     'category_number': 3,
+    #     'account_name': account_name,
+    #     'message_or_voom': message_or_voom,
+    #     'month': month,
+    #     'day': day,
+    #     'time': time,
+    #     'ad_presence': ad_presence,
+    #     'ad_account_name': ad_account_name,
+    #     'lp_count': lp_count,
+    #     'lp_number_count': lp_number_count,
+    #     'arrow_presence': arrow_presence,
+    #     'error_message': error_message
+    # }])
 
 def summarize_slides(file_path):
     """
@@ -135,14 +211,16 @@ def summarize_slides(file_path):
     for slide in slides:
         slide_type = classify_slide(slide,standard_top,standard_left)
         if slide_type == 'cover':
-            # df = extract_cover_data(slide)
+            # df = 
+            extract_cover_data(slide)
             print(0)
         elif slide_type == 'month':
-            # df = extract_month_data(slide)
+            # df = 
+            extract_month_data(slide)
             print(1)
         elif slide_type == 'content':
             # df = extract_content_data(slide)
-            print(2)
+            None
         else:
             print(3)
             # df = pd.DataFrame([{

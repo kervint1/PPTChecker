@@ -59,6 +59,7 @@ def get_lp_date_message(file_path, left=55, top=50, right=200, bottom=90, debug_
 # ファイルパスを指定して関数を呼び出し、結果を表示
 file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
+file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # text_data = get_lp_date_message(file_path2, debug_dir=r"C:\Users\iniad\Documents\adpro\debugpictures")
 # print(text_data)
 from PIL import Image, ImageFilter, ImageEnhance
@@ -66,6 +67,7 @@ import pytesseract
 
 # 画像のパス
 image_path = r"C:\Users\iniad\Documents\adpro\debugpictures\slide_0_shape_0.png"
+
 
 def preprocess_image(image_path):
     # 画像を読み込む
@@ -125,6 +127,8 @@ def checkplace(filepath):
         slide_number+=1
         for shape in slide.shapes:
             shapenumber +=1
-            print(slide_number,shapenumber,shape.top.pt,shape.left.pt)
+            print(slide_number,shapenumber,shape.top.pt,shape.left.pt,shape.height)
+        if slide_number>50:
+            break
 
-checkplace(file_path1)
+checkplace(file_path3)
