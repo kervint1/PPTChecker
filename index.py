@@ -33,6 +33,18 @@ def extract_cover_data(slide):
     """
     表紙のスライドからデータを抽出する関数。
     """
+    objects = slide.shapes
+    permissible = 5
+    cover_position_top = []
+    cover_position_left = []
+
+    for shape in objects:
+        if abs(shape.top.pt-cover_position_top[0]) < permissible and abs(shape.left.pt-cover_position_left[0]) < permissible:
+            account_name = shape.text
+        elif abs(shape.top.pt-cover_position_top[1]) < permissible and abs(shape.left.pt-cover_position_left[1]) < permissible:
+            error_message = "no errors"
+    
+
     # 実際の実装はここに
     account_name = "example_account"
     error_message = "no errors"
@@ -96,24 +108,26 @@ def summarize_slides(file_path):
     """
     slides = Presentation(file_path).slides
 
-    #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx
+    #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx(少数点以下切り捨て)
     # 上記のpptでpositionを大まかに決める
     # 1 4,2 6,3 6
-    LV_position_top = [474.2636220472441,199.1259842519685,3.9204724409448817]
-    LV_position_left = [311.2373228346457,111.10039370078741,21.474724409448818]
+    LV_position_top = [474,233,3]
+    LV_position_left = [311,109,21]
     permissible = 20
     standard_top = []
     standard_left = []
-    # そのpptの基準を決める
+    # その初期３スライドのpptの基準を決める
     for i in range(0,3):
         for shape in slides[i].shapes:
             if (abs(shape.left.pt-LV_position_left[i])<permissible and
                 abs(shape.top.pt-LV_position_top[i])<permissible):
-                standard_top.append(shape.top.pt)
-                standard_left.append(shape.left.pt)
+                standard_top.append(round(shape.top.pt,0))
+                standard_left.append(round(shape.left.pt))
                 break
             else:
                 None
+    if len(standard_top)!=3:
+        print("top3 Slide Error")
 
     print(standard_top,standard_left)
     data_frames = []
@@ -159,6 +173,8 @@ def save_texts_to_excel(texts, filename):
 
 file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
+file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path1))
-summarize_slides(file_path2)
+summarize_slides(file_path3)
+
