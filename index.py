@@ -115,7 +115,9 @@ def extract_content_data(slide):
     """
     # 実際の実装はここに
     objects = slide.shapes
-    permissible = 5
+    normal_permissible = 5
+    strict_permissible = 3
+    find_permissible =30
     cover_position_top = [145,199,]
     cover_position_left = [256,191,]
     account_name = None
@@ -131,7 +133,7 @@ def extract_content_data(slide):
     error_message = "no errors"
 
     for shape in objects:
-        if check_position(shape,permissible,cover_position_top[0],cover_position_left[0]):  
+        if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]):  
             pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況"
             match = re.search(pattern, shape.text)
             
@@ -142,7 +144,7 @@ def extract_content_data(slide):
                     message_or_voom = 1
                 elif re.search(r"VOOM",message_voom):
                     message_or_voom = 2
-        elif check_position(shape,permissible,cover_position_top[1],cover_position_left[1]):
+        elif check_position(shape,normal_permissible,cover_position_top[1],cover_position_left[1]):
             # 正規表現パターンを定義
             pattern = r"(\d{1,2})月(\d{1,2})日.*?(\d{1,2}:\d{2})"
             
@@ -153,7 +155,8 @@ def extract_content_data(slide):
                 month = int(match.group(1))
                 day = int(match.group(2))
                 time = match.group(3)
-        elif check_position(shape,permissible,cover_position_top[2],cover_position_left[2]):
+        elif (shape.top.pt>cover_position_top - strict_permissible and 
+            abs(shape.left.pt-cover_position_left) < strict_permissible):
             match = re.search(r"(\d{4})年(\d{1,2})月", shape.text)
             if match:
                 year = int(match.group(1))

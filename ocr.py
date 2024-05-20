@@ -118,6 +118,8 @@ preprocessed_text, preprocessed_image_path
 # sharpened_image_path = enhance_sharpness(preprocessed_image_path, 2.0)
 # print(sharpened_image_path)
 
+from pptx.enum.shapes import MSO_SHAPE
+
 def checkplace(filepath):
     prs = Presentation(filepath)
     slide_number = 0
@@ -127,8 +129,11 @@ def checkplace(filepath):
         slide_number+=1
         for shape in slide.shapes:
             shapenumber +=1
-            print(slide_number,shapenumber,shape.top.pt,shape.left.pt,shape.height)
+            if shape.shape_type == 1:
+                print(slide_number,shapenumber,shape.auto_shape_type)
+            else :
+                print(slide_number,shapenumber,shape.shape_type)
         if slide_number>50:
             break
 
-checkplace(file_path3)
+checkplace(file_path1)
