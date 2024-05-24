@@ -116,10 +116,14 @@ def extract_content_data(slide):
     # 実際の実装はここに
     objects = slide.shapes
     normal_permissible = 5
-    strict_permissible = 3
+    strict_permissible = 1
     find_permissible =30
-    cover_position_top = [145,199,]
-    cover_position_left = [256,191,]
+    cover_position_top = [145,199]
+    cover_position_left = [256,191]
+    reference_line_top = [136,145,321,332]
+    reference_line_left = [21,35,146,256,356,455,554,653]
+    ad2_bottom = None
+    
     account_name = None
     message_or_voom = None
     month = None
@@ -127,10 +131,12 @@ def extract_content_data(slide):
     time = None
     ad_presence = None
     ad_account_name = "ad_account"
-    lp_count = 3
-    lp_number_count = 5
-    arrow_presence = False
-    error_message = "no errors"
+    ad_number_count = 0
+    lp_count = 0
+    lp_number_count = 0
+    arrow_presence = None
+    error_message = ""
+        
 
     for shape in objects:
         if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]):  
@@ -155,12 +161,30 @@ def extract_content_data(slide):
                 month = int(match.group(1))
                 day = int(match.group(2))
                 time = match.group(3)
-        elif (shape.top.pt>cover_position_top - strict_permissible and 
-            abs(shape.left.pt-cover_position_left) < strict_permissible):
-            match = re.search(r"(\d{4})年(\d{1,2})月", shape.text)
-            if match:
-                year = int(match.group(1))
-                month = int(match.group(2))
+        #1.LPとADの大まかな範囲を指定(top厳密,left指定なし)
+        #2.幅でpictureをLPとADを分類、位置判定、数
+        #3.振り数を分類,位置判定,数
+        #3.矢印有無
+        elif (shape.top.pt>reference_line_top[0] - strict_permissible):
+            if (shape.shape_type == 13, shape.width ==  102.0455905511811):
+                if check_position(shape,strict_permissible,reference_line_top[1],reference_line_left[1]):
+                    ad_presence = True
+                    if shape.top.pt +shape.height.pt > 145:
+                        error_message += "adの高さが大きすぎる,"
+                elif check_position(shape,strict_permissible,reference_line_top[1],reference_line_left[2]):
+                    ad2_bottom = shape.top.pt +shape.height.pt
+                else:
+                    error_message += "基準線に従っていないAD,"
+            elif (shape.shape_type == 13, shape.width ==  93.54181102362205):
+                lp_count += 1
+            elif (shape.auto_shape_type == 7):
+                arrow_presence = shape.top.pt
+            elif(shape.auto_shape_type == 1 and shape.left.pt > reference_line_left[3]-1):
+                lp_number_count += 1
+            elif(shape.auto_shape_type == 1 ):
+                ad_number_count = +1
+            else:
+                error_message +="基準線にあっていないオブジェクトがあります。"
     if not(account_name and message_or_voom):
         error_message = "オブジェクトが基準値より20pt離れている"
     print(account_name,message_or_voom,year,month,error_message)

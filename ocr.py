@@ -130,10 +130,16 @@ def checkplace(filepath):
         for shape in slide.shapes:
             shapenumber +=1
             if shape.shape_type == 1:
-                print(slide_number,shapenumber,shape.auto_shape_type)
+                shapenumber +=1
             else :
-                print(slide_number,shapenumber,shape.shape_type)
+                print(slide_number,shapenumber,shape.top.pt,shape.left.pt)
         if slide_number>50:
             break
-
-checkplace(file_path1)
+def checkplace2(filepath,slidenumber):
+    prs = Presentation(filepath)
+    shapenumber = 0
+    for shape in prs.slides[slidenumber-1].shapes:
+        shapenumber +=1
+        print(slidenumber,shapenumber,shape.top.pt,shape.left.pt,shape.height.pt,shape.width.pt)
+# checkplace(file_path1)
+checkplace2(file_path1,4)
