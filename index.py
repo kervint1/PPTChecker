@@ -139,7 +139,7 @@ def extract_content_data(slide):
         
 
     for shape in objects:
-        if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]):  
+        if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]) and shape.shape_type != 13:  
             pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況"
             match = re.search(pattern, shape.text)
             
@@ -184,10 +184,16 @@ def extract_content_data(slide):
             elif(shape.auto_shape_type == 1 ):
                 ad_number_count = +1
             else:
-                error_message +="基準線にあっていないオブジェクトがあります。"
+                error_message +="基準線にあっていないオブジェクトがあります1。,"
+        else:
+            error_message +="基準線にあっていないオブジェクトがあります2。,"
+    
+    if (ad2_bottom and arrow_presence):
+        if(ad2_bottom>arrow_presence):
+            error_message +="矢印がかぶっている"
     if not(account_name and message_or_voom):
-        error_message = "オブジェクトが基準値より20pt離れている"
-    print(account_name,message_or_voom,year,month,error_message)
+        error_message += "オブジェクトが基準値より20pt離れている"
+    print(account_name,message_or_voom,month,day,time,ad_presence,ad_account_name,ad_number_count,lp_count,lp_number_count,arrow_presence,error_message)
 
 
     # return pd.DataFrame([{
@@ -246,10 +252,11 @@ def summarize_slides(file_path):
             extract_month_data(slide)
             print(1)
         elif slide_type == 'content':
-            # df = extract_content_data(slide)
-            None
-        else:
+            # df = 
+            extract_content_data(slide)
             print(3)
+        else:
+            print(4)
             # df = pd.DataFrame([{
             #     'category_number': 4,
             #     'account_name': None,
@@ -281,5 +288,5 @@ file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウン�
 file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path1))
-summarize_slides(file_path3)
+summarize_slides(file_path1)
 
