@@ -118,8 +118,8 @@ def extract_content_data(slide):
     normal_permissible = 5
     strict_permissible = 1
     find_permissible =30
-    cover_position_top = [145,199]
-    cover_position_left = [256,191]
+    cover_position_top = [3,145,199]
+    cover_position_left = [21,256,191]
     reference_line_top = [136,145,321,332]
     reference_line_left = [21,35,146,256,356,455,554,653]
     ad2_bottom = None
@@ -140,17 +140,18 @@ def extract_content_data(slide):
 
     for shape in objects:
         if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]) and shape.shape_type != 13:  
-            pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況"
+            pattern = r'^([\w\s]+)　LINE公式アカウント\s+(\w+活用状況)\s*$'
             match = re.search(pattern, shape.text)
             
             if match:
+                print("a")
                 account_name = match.group(1).strip()
                 message_voom = match.group(2).strip()
                 if re.search(r"メッセージ",message_voom):
                     message_or_voom = 1
                 elif re.search(r"VOOM",message_voom):
                     message_or_voom = 2
-        elif check_position(shape,normal_permissible,cover_position_top[1],cover_position_left[1]):
+        elif check_position(shape,normal_permissible,cover_position_top[1],cover_position_left[1]) and shape.shape_type != 13:
             # 正規表現パターンを定義
             pattern = r"(\d{1,2})月(\d{1,2})日.*?(\d{1,2}:\d{2})"
             
@@ -193,7 +194,8 @@ def extract_content_data(slide):
             error_message +="矢印がかぶっている"
     if not(account_name and message_or_voom):
         error_message += "オブジェクトが基準値より20pt離れている"
-    print(account_name,message_or_voom,month,day,time,ad_presence,ad_account_name,ad_number_count,lp_count,lp_number_count,arrow_presence,error_message)
+    print(account_name,message_or_voom)
+        #   month,day,time,ad_presence,ad_account_name,ad_number_count,lp_count,lp_number_count,arrow_presence,error_message)
 
 
     # return pd.DataFrame([{
@@ -244,12 +246,10 @@ def summarize_slides(file_path):
     for slide in slides:
         slide_type = classify_slide(slide,standard_top,standard_left)
         if slide_type == 'cover':
-            # df = 
-            extract_cover_data(slide)
+            # df = extract_cover_data(slide)
             print(0)
         elif slide_type == 'month':
-            # df = 
-            extract_month_data(slide)
+            # df = extract_month_data(slide)
             print(1)
         elif slide_type == 'content':
             # df = 

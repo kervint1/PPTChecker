@@ -141,5 +141,15 @@ def checkplace2(filepath,slidenumber):
     for shape in prs.slides[slidenumber-1].shapes:
         shapenumber +=1
         print(slidenumber,shapenumber,shape.top.pt,shape.left.pt,shape.height.pt,shape.width.pt)
+
+import re
+def test1(filepath,slidenumber):
+    prs = Presentation(filepath)
+    shapenumber = 0
+    text = "LOUIS VUITTON　LINE公式アカウント メッセージ活用状況 "
+        
+    pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況\s*"
+    match = re.search(pattern,text)
+
 # checkplace(file_path1)
 checkplace2(file_path1,4)
