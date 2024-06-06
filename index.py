@@ -98,7 +98,7 @@ def extract_month_data(slide):
                 month = int(match.group(2))
     if not(account_name and message_or_voom):
         error_message = "オブジェクトが基準値より20pt離れている"
-    print(account_name,message_or_voom,year,month,error_message)
+    # print(account_name,message_or_voom,year,month,error_message)
 
     return pd.DataFrame([{
         'category_number': 2,
@@ -106,6 +106,7 @@ def extract_month_data(slide):
         'message_or_voom': message_or_voom,  
         'year': year,
         'month': month,
+        'day' : 0,
         'error_message': error_message
     }])
 
@@ -139,7 +140,7 @@ def extract_content_data(slide):
     error_message = ""
     numbercount = 0
     count_objects = 0
-        
+
 
     for shape in objects:
         count_objects += 1
@@ -274,7 +275,7 @@ def summarize_slides(file_path):
         
     
     result_df = pd.concat(data_frames, ignore_index=True)
-    print(result_df)
+    # print(result_df)
     return result_df
     
 
