@@ -60,14 +60,14 @@ def extract_cover_data(slide):
             break
     if not(account_name and message_or_voom):
         error_message = "オブジェクトが基準値より20pt離れている"
-    print(account_name,message_or_voom,error_message)
+    # print(account_name,message_or_voom,error_message)
     # 実際の実装はここに
-    # return pd.DataFrame([{
-    #     'category_number': 1,
-    #     'account_name': account_name,
-    #     'message_or_voom': message_or_voom,        
-    #     'error_message': error_message
-    # }])
+    return pd.DataFrame([{
+        'category_number': 1,
+        'account_name': account_name,
+        'message_or_voom': message_or_voom,        
+        'error_message': error_message
+    }])
 
 def extract_month_data(slide):
     """
@@ -100,14 +100,14 @@ def extract_month_data(slide):
         error_message = "オブジェクトが基準値より20pt離れている"
     print(account_name,message_or_voom,year,month,error_message)
 
-    # return pd.DataFrame([{
-    #     'category_number': 2,
-    #     'account_name': account_name,
-    #     'message_or_voom': message_or_voom,  
-    #     'year': year,
-    #     'month': month,
-    #     'error_message': error_message
-    # }])
+    return pd.DataFrame([{
+        'category_number': 2,
+        'account_name': account_name,
+        'message_or_voom': message_or_voom,  
+        'year': year,
+        'month': month,
+        'error_message': error_message
+    }])
 
 def extract_content_data(slide):
     """
@@ -117,7 +117,6 @@ def extract_content_data(slide):
     objects = slide.shapes
     normal_permissible = 5
     strict_permissible = 1
-    find_permissible =30
     cover_position_top = [3,69]
     cover_position_left = [21,123]
     reference_line_top = [136,145,321,332]
@@ -182,6 +181,8 @@ def extract_content_data(slide):
                     error_message += "基準線に従っていないAD,"+str(count_objects)
             elif (shape.shape_type == 13 and abs(shape.width.pt - lp_width) < 5):
                 lp_count += 1
+            elif (shape.shape_type != 1 ):
+                error_message +="基準線にあっていないオブジェクトがありますnot1。" + str(count_objects)
             elif (shape.auto_shape_type == 7):
                 arrow_presence = shape.top.pt
             elif(shape.auto_shape_type == 1 and shape.left.pt > reference_line_left[3]-1):
@@ -199,24 +200,23 @@ def extract_content_data(slide):
             error_message +="矢印がかぶっている"
     if not(account_name and message_or_voom):
         error_message += "オブジェクトが基準値より20pt離れている"
-    print(error_message)
-        #   account_name,message_or_voom,month,day,time,ad_presence,ad_account_name,ad_number_count,lp_count,lp_number_count,arrow_presence,error_message)
+    # print(account_name,message_or_voom,month,day,time,ad_presence,ad_account_name,ad_number_count,lp_count,lp_number_count,arrow_presence,error_message)
 
 
-    # return pd.DataFrame([{
-    #     'category_number': 3,
-    #     'account_name': account_name,
-    #     'message_or_voom': message_or_voom,
-    #     'month': month,
-    #     'day': day,
-    #     'time': time,
-    #     'ad_presence': ad_presence,
-    #     'ad_account_name': ad_account_name,
-    #     'lp_count': lp_count,
-    #     'lp_number_count': lp_number_count,
-    #     'arrow_presence': arrow_presence,
-    #     'error_message': error_message
-    # }])
+    return pd.DataFrame([{
+        'category_number': 3,
+        'account_name': account_name,
+        'message_or_voom': message_or_voom,
+        'month': month,
+        'day': day,
+        'time': time,
+        'ad_presence': ad_presence,
+        'ad_account_name': ad_account_name,
+        'lp_count': lp_count,
+        'lp_number_count': lp_number_count,
+        'arrow_presence': arrow_presence,
+        'error_message': error_message
+    }])
 
 def summarize_slides(file_path):
     """
@@ -245,7 +245,7 @@ def summarize_slides(file_path):
     if len(standard_top)!=3:
         print("top3 Slide Error")
 
-    print(standard_top,standard_left)
+    # print(standard_top,standard_left)
     data_frames = []
 
     count= 0
@@ -254,29 +254,27 @@ def summarize_slides(file_path):
         count+=1
         slide_type = classify_slide(slide,standard_top,standard_left)
         if slide_type == 'cover':
-            # df = extract_cover_data(slide)
-            print(0)
+            df = extract_cover_data(slide)
+            # print(0)
         elif slide_type == 'month':
-            # df = extract_month_data(slide)
-            print(1)
+            df = extract_month_data(slide)
+            # print(1)
         elif slide_type == 'content':
-            print("content",count)
-            # df = 
-            extract_content_data(slide)
+            # print("content",count)
+            df = extract_content_data(slide)
             
         else:
             print(4)
-            # df = pd.DataFrame([{
-            #     'category_number': 4,
-            #     'account_name': None,
-            #     'error_message': 'No slide content'
-            # }])
-        # data_frames.append(df)
+            df = pd.DataFrame([{
+                'category_number': 4,
+                'account_name': None,
+                'error_message': 'No slide content'
+            }])
+        data_frames.append(df)
         
     
-    return 0
-
     result_df = pd.concat(data_frames, ignore_index=True)
+    print(result_df)
     return result_df
     
 
@@ -297,5 +295,5 @@ file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウン�
 file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path1))
-summarize_slides(file_path3)
+summarize_slides(file_path1).to_csv('file1Test1.csv')
 
