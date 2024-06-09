@@ -115,6 +115,7 @@ def extract_content_data(slide):
     内容のスライドからデータを抽出する関数。
     """
     # 実際の実装はここに
+    
     objects = slide.shapes
     normal_permissible = 5
     strict_permissible = 1
@@ -192,6 +193,7 @@ def extract_content_data(slide):
                 ad_number_count += 1
             else:
                 error_message +="基準線にあっていないオブジェクトがあります1。,"
+                
 
         # else:
             # error_message +="基準線にあっていないオブジェクトがあります2。,"
