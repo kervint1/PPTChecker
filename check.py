@@ -31,35 +31,25 @@ def find_misplaced_row_index(df):
         return None
 
 #表紙チェック
-def find_single_month_rows(df):
-    # Group by 'month' and count occurrences
-    month_counts = df['month'].value_counts()
-    
-    # Identify months with only one occurrence
-    single_months = month_counts[month_counts == 1].index.tolist()
-    
-    # Filter the dataframe to get rows with single-occurrence months
-    single_month_rows = df[df['month'].isin(single_months)]
-    
-    return single_month_rows
+def month_check(df):
+    # category_number が 2 の行の月を取得
+    category_2_months = df[df['category_number'] == 2]['date'].dt.month.unique()
 
-#全チェック()
-def all_checks(df):
-    df = summarize_slides(df)
-    # 移動すべき行を見つける
-    rows_to_move = find_rows_to_move(df)
-    
-    # 月が1つしかない行を見つける
-    single_month_rows = find_single_month_rows(df)
-    
-    # 移動すべき行をデータフレームに変換
-    move_rows_df = pd.DataFrame([(key, row) for key, rows in rows_to_move.items() for row in rows], columns=['category_number', 'row_index'])
-    
-    # 月が1つしかない行と結合
-    combined_df = pd.concat([single_month_rows, df.loc[move_rows_df['row_index']]]).drop_duplicates().reset_index(drop=True)
-    
-    return combined_df
+    # category_number が 3 の行の月を取得
+    category_3_months = df[df['category_number'] == 3]['date'].dt.month.unique()
 
+    # category_number 2 にあって category_number 3 にない月
+    category_2_not_in_3 = set(category_2_months) - set(category_3_months)
+
+    # category_number 3 にあって category_number 2 にない月
+    category_3_not_in_2 = set(category_3_months) - set(category_2_months)
+
+    return {
+        "category_2_not_in_3": list(category_2_not_in_3),
+        "category_3_not_in_2": list(category_3_not_in_2)
+    }
+
+#
 file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
 file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
@@ -70,4 +60,4 @@ file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_�
 
 
 df = summarize_slides(file_path1)
-print(find_misplaced_row_index(df))
+print(month_check(df))
