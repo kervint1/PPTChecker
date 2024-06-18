@@ -7,23 +7,38 @@ import os
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 
-def get_lp_account_name_message(file_path, left=55, top=10, right=200, bottom=100):
-    prs = Presentation(file_path)
-    slides_texts = []  # 各スライドのテキストリストを格納するリスト
+# def get_lp_account_name_message(file_path, left=55, top=10, right=200, bottom=100):
+#     prs = Presentation(file_path)
+#     slides_texts = []  # 各スライドのテキストリストを格納するリスト
 
-    for slide in prs.slides:
-        slide_texts = []  # 現在のスライドのテキストを格納するリスト
-        for shape in slide.shapes:
-            if shape.shape_type == 13 and shape.left.pt<37 and shape.left.pt>32 and shape.top.pt<147 and shape.top.pt>143:  # 画像タイプ
-                image_stream = io.BytesIO(shape.image.blob)
-                image = Image.open(image_stream)
-                # 画像を指定された範囲でクロップ
-                cropped_image = image.crop((left, top, right, bottom))
-                text = pytesseract.image_to_string(cropped_image, lang='eng+jpn')
-                slide_texts.append(text)
-        slides_texts.append(slide_texts)
+#     for slide in prs.slides:
+#         slide_texts = []  # 現在のスライドのテキストを格納するリスト
+#         for shape in slide.shapes:
+#             if shape.shape_type == 13 and shape.left.pt<37 and shape.left.pt>32 and shape.top.pt<147 and shape.top.pt>143:  # 画像タイプ
+#                 image_stream = io.BytesIO(shape.image.blob)
+#                 image = Image.open(image_stream)
+#                 # 画像を指定された範囲でクロップ
+#                 cropped_image = image.crop((left, top, right, bottom))
+#                 text = pytesseract.image_to_string(cropped_image, lang='eng+jpn')
+#                 slide_texts.append(text)
+#         slides_texts.append(slide_texts)
 
-    return slides_texts
+#     return slides_texts
+
+def get_lp_account_name_message(shape, left=55, top=10, right=200, bottom=70):
+    shape_texts = None  # 現在のスライドのテキスト
+    if shape.shape_type == 13 :# 画像タイプ
+        image_stream = io.BytesIO(shape.image.blob)
+        image = Image.open(image_stream)
+        # 画像を指定された範囲でクロップ
+        cropped_image = image.crop((left, top, right, bottom))
+        text = pytesseract.image_to_string(cropped_image, lang='eng+jpn')
+        shape_texts = text
+
+        #デバッグ用イメージ保存
+        # temp_path = r"C:\Users\iniad\Documents\adpro\debugpictures\test_image.png"
+        # cropped_image.save(temp_path)
+    return shape_texts
 
 def get_lp_date_message(file_path, left=55, top=50, right=200, bottom=90, debug_dir=None):
     prs = Presentation(file_path)
@@ -143,13 +158,13 @@ def checkplace2(filepath,slidenumber):
         print(slidenumber,shapenumber,shape.top.pt,shape.left.pt,shape.height.pt,shape.width.pt)
 
 import re
-def test1(filepath,slidenumber):
+def test1(filepath,slidenumber,shapenumber):
     prs = Presentation(filepath)
-    shapenumber = 0
-    text = "LOUIS VUITTON　LINE公式アカウント メッセージ活用状況 "
-        
-    pattern = r"(.+?)\s+LINE公式アカウント\s+(.+?)\s+活用状況\s*"
-    match = re.search(pattern,text)
+    shape = prs.slides[slidenumber-1].shapes[shapenumber-1]
+    
+    return get_lp_account_name_message(shape)
+
+# print(test1(file_path3,138,9))
 
 # checkplace(file_path1)
-checkplace2(file_path1,4)
+# checkplace2(file_path1,4)

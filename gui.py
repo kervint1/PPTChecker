@@ -27,7 +27,7 @@ def save_df_to_excel(df, file_path):
     sheet.append([file_path])
     
     # データフレームの内容をシートに書き込む
-    for r in dataframe_to_rows(df, index=False, header=True):
+    for r in dataframe_to_rows(df, index=True, header=True):
         sheet.append(r)
     
     # ワークブックを保存

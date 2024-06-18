@@ -1,5 +1,7 @@
 from pptx import Presentation
 import pandas as pd
+from ocr import get_lp_account_name_message
+from datetime import datetime
 import os
 import re
 
@@ -79,8 +81,7 @@ def extract_month_data(slide):
     cover_position_top = [199,233,283]
     cover_position_left = [191,109,111]
     account_name = None
-    year = None
-    month = None
+    date = None
     error_message = None
 
     for shape in objects:
@@ -96,6 +97,7 @@ def extract_month_data(slide):
             if match:
                 year = int(match.group(1))
                 month = int(match.group(2))
+                date = datetime(year, month, 1, 0, 0, 0)
     if not(account_name and message_or_voom):
         error_message = "オブジェクトが基準値より20pt離れている"
     # print(account_name,message_or_voom,year,month,error_message)
@@ -104,9 +106,7 @@ def extract_month_data(slide):
         'category_number': 2,
         'account_name': account_name,
         'message_or_voom': message_or_voom,  
-        'year': year,
-        'month': month,
-        'day' : 0,
+        'date' : date,
         'error_message': error_message
     }])
 
@@ -129,9 +129,7 @@ def extract_content_data(slide):
     
     account_name = None
     message_or_voom = None
-    month = None
-    day = None
-    time = None
+    date = None
     ad_presence = None
     ad_account_name = "ad_account"
     ad_number_count = 0
@@ -145,10 +143,10 @@ def extract_content_data(slide):
 
     for shape in objects:
         count_objects += 1
+        #上部アカウント名VOOMまたはメッセージ
         if check_position(shape,normal_permissible,cover_position_top[0],cover_position_left[0]) and shape.shape_type != 13:  
             pattern = r'^([\w\s]+)　LINE公式アカウント\s+(\w+活用状況)\s*$'
             match = re.search(pattern, shape.text)
-            
             if match:
                 account_name = match.group(1).strip()
                 message_voom = match.group(2).strip()
@@ -156,6 +154,7 @@ def extract_content_data(slide):
                     message_or_voom = 1
                 elif re.search(r"VOOM",message_voom):
                     message_or_voom = 2
+        #日付のボックス
         elif check_position(shape,normal_permissible,cover_position_top[1],cover_position_left[1]) and shape.shape_type != 13:
             # 正規表現パターンを定義
             pattern = r"(\d{1,2})月(\d{1,2})日.*?(\d{1,2}:\d{2})"
@@ -167,6 +166,13 @@ def extract_content_data(slide):
                 month = int(match.group(1))
                 day = int(match.group(2))
                 time = match.group(3)
+                
+                # 現在の年を取得
+                year = datetime.now().year
+                
+                # datetime型に変換
+                date_str = f"{year}-{month:02}-{day:02} {time}"
+                date = datetime.strptime(date_str, "%Y-%m-%d %H:%M")
         #1.LPとADの大まかな範囲を指定(top厳密,left指定なし)
         #2.幅でpictureをLPとADを分類、位置判定、数
         #3.振り数を分類,位置判定,数
@@ -175,10 +181,15 @@ def extract_content_data(slide):
             if (shape.shape_type == 13 and abs(shape.width.pt - ad1_width) < 5):
                 if check_position(shape,strict_permissible,reference_line_top[1],reference_line_left[1]):
                     ad_presence = True
+                    ad_account_name = get_lp_account_name_message(shape)
+                    #145->ADのtop,371=>ADの最大height
                     if shape.top.pt +shape.height.pt > 145 + 371:
                         error_message += "adの高さが大きすぎる," + str(count_objects)
                 elif check_position(shape,strict_permissible,reference_line_top[1],reference_line_left[2]):
                     ad2_bottom = shape.top.pt +shape.height.pt
+                elif abs(shape.left.pt - reference_line_left[1]) < strict_permissible:
+                    if shape.top.pt +shape.height.pt > 145 + 371:
+                        error_message += "adの高さが大きすぎる," + str(count_objects)                      
                 else:
                     error_message += "基準線に従っていないAD,"+str(count_objects)
             elif (shape.shape_type == 13 and abs(shape.width.pt - lp_width) < 5):
@@ -210,9 +221,7 @@ def extract_content_data(slide):
         'category_number': 3,
         'account_name': account_name,
         'message_or_voom': message_or_voom,
-        'month': month,
-        'day': day,
-        'time': time,
+        'date': date,
         'ad_presence': ad_presence,
         'ad_account_name': ad_account_name,
         'lp_count': lp_count,
@@ -297,6 +306,6 @@ file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッ
 file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
 file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
-# print(extract_text_from_pptx_by_slide(file_path1))
+# print(extract_text_from_pptx_by_slide(file_path3))
 summarize_slides(file_path1).to_csv('file1Test1.csv')
 

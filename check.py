@@ -1,71 +1,34 @@
 from pptx import Presentation
 import pandas as pd
-import os
-import re
 from index import summarize_slides
 
 # 月の表紙スライドチェック
 
 import pandas as pd
 
-#日付の順番をチェック(未使用)
-def check_order(df):
-    # category_number が 2 と 3 の行をフィルタリング
-    df_filtered = df[df['category_number'].isin([2, 3])]
-    
-    # 間違っている行を収集するための空のデータフレームを初期化
-    incorrect_df = pd.DataFrame(columns=df.columns)
-
-    # ユニークな category_number ごとにイテレート
-    for category in df_filtered['category_number'].unique():
-        # 特定の category_number に対するデータフレームのサブセットを取得
-        category_df = df_filtered[df_filtered['category_number'] == category]
+def find_misplaced_row_index(df):
+    def compare_and_find_mismatch(original_df, sorted_df):
+        original_index = original_df.index.tolist()
+        sorted_index = sorted_df.index.tolist()
         
-        # year, month, day の順にサブセットをソート
-        category_df_sorted = category_df.sort_values(by=['year', 'month', 'day'])
-        
-        # ソートされたデータフレームとソート前のデータフレームを比較して、間違っている行を特定
-        if not category_df_sorted.index.equals(category_df.index):
-            print(category_df)
-            print(category_df_sorted)
-            incorrect_df = pd.concat([incorrect_df, category_df[category_df.index != category_df_sorted.index]])
+        for i, (orig_idx, sorted_idx) in enumerate(zip(original_index, sorted_index)):
+            if orig_idx != sorted_idx:
+                return orig_idx
+        return None
 
-    return incorrect_df
+    # category_number が 2 または 3 の行をフィルタリング
+    category_2_3_df = df[df['category_number'].isin([2, 3])]
 
-#正しい日付の順序にするための動かすべき行を出力->({"categorynum":(スライドナンバー)-1})
-def find_rows_to_move(df):
-    # category_number が 2 と 3 の行をフィルタリング
-    df_filtered = df[df['category_number'].isin([2, 3])]
-    
-    # 各カテゴリーの移動すべき行を格納する辞書
-    rows_to_move = {}
+    # date 列でソート
+    category_2_3_df_sorted = category_2_3_df.sort_values(by='date')
 
-    # ユニークな category_number ごとにイテレート
-    for category in df_filtered['category_number'].unique():
-        # 特定の category_number に対するデータフレームのサブセットを取得
-        category_df = df_filtered[df_filtered['category_number'] == category]
-        
-        # year, month, day の順にサブセットをソート
-        category_df_sorted = category_df.sort_values(by=['year', 'month', 'day'])
+    # ソート前後の DataFrame を比較して、最初に異なる行を特定
+    mismatch_index = compare_and_find_mismatch(category_2_3_df, category_2_3_df_sorted)
 
-        # ソートされたデータフレームとソート前のデータフレームを比較して、間違っている行を特定
-        if not category_df_sorted.index.equals(category_df.index):
-            original_index = category_df.index.tolist()
-            sorted_index = category_df_sorted.index.tolist()
-
-            # リストをソートするために必要な最小の移動を見つける
-            moves = []
-            sorted_positions = {v: i for i, v in enumerate(sorted_index)}
-
-            for i in range(len(original_index)):
-                while original_index[i] != sorted_index[i]:
-                    swap_idx = sorted_positions[original_index[i]]
-                    moves.append(original_index[i])
-                    original_index[i], original_index[swap_idx] = original_index[swap_idx], original_index[i]
-
-            rows_to_move[category] = moves
-
-    return rows_to_move
+    if mismatch_index is not None:
+        return category_2_3_df.loc[mismatch_index]
+    else:
+        return None
 
 #表紙チェック
 def find_single_month_rows(df):
@@ -103,4 +66,8 @@ file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_�
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path1))
 # summarize_slides(file_path1).to_csv('file1Test1.csv')
-print(find_single_month_rows(summarize_slides(file_path1)))
+# print(find_single_month_rows(summarize_slides(file_path1)))
+
+
+df = summarize_slides(file_path1)
+print(find_misplaced_row_index(df))
