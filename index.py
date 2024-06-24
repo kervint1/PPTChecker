@@ -232,64 +232,64 @@ def extract_content_data(slide,ocr):
         'error_message': error_message
     }])
 
-def summarize_slides(file_path):
-    """
-    スライドを分類し、それぞれのデータを取得してpandasでデータフレームにまとめる関数。
-    """
-    slides = Presentation(file_path).slides
+# def summarize_slides(file_path):
+#     """
+#     スライドを分類し、それぞれのデータを取得してpandasでデータフレームにまとめる関数。
+#     """
+#     slides = Presentation(file_path).slides
 
-    #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx(少数点以下切り捨て)
-    # 上記のpptでpositionを大まかに決める
-    # 1 4,2 6,3 6
-    LV_position_top = [474,233,3]
-    LV_position_left = [311,109,21]
-    permissible = 20
-    standard_top = []
-    standard_left = []
-    # その初期３スライドのpptの基準を決める
-    for i in range(0,3):
-        for shape in slides[i].shapes:
-            if (abs(shape.left.pt-LV_position_left[i])<permissible and
-                abs(shape.top.pt-LV_position_top[i])<permissible):
-                standard_top.append(round(shape.top.pt,0))
-                standard_left.append(round(shape.left.pt))
-                break
-            else:
-                None
-    if len(standard_top)!=3:
-        print("top3 Slide Error")
+#     #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx(少数点以下切り捨て)
+#     # 上記のpptでpositionを大まかに決める
+#     # 1 4,2 6,3 6
+#     LV_position_top = [474,233,3]
+#     LV_position_left = [311,109,21]
+#     permissible = 20
+#     standard_top = []
+#     standard_left = []
+#     # その初期３スライドのpptの基準を決める
+#     for i in range(0,3):
+#         for shape in slides[i].shapes:
+#             if (abs(shape.left.pt-LV_position_left[i])<permissible and
+#                 abs(shape.top.pt-LV_position_top[i])<permissible):
+#                 standard_top.append(round(shape.top.pt,0))
+#                 standard_left.append(round(shape.left.pt))
+#                 break
+#             else:
+#                 None
+#     if len(standard_top)!=3:
+#         print("top3 Slide Error")
 
-    # print(standard_top,standard_left)
-    data_frames = []
+#     # print(standard_top,standard_left)
+#     data_frames = []
 
-    count= 0
+#     count= 0
 
-    for slide in slides:
-        count+=1
-        slide_type = classify_slide(slide,standard_top,standard_left)
-        if slide_type == 'cover':
-            df = extract_cover_data(slide)
-            # print(0)
-        elif slide_type == 'month':
-            df = extract_month_data(slide)
-            # print(1)
-        elif slide_type == 'content':
-            # print("content",count)
-            df = extract_content_data(slide)
+#     for slide in slides:
+#         count+=1
+#         slide_type = classify_slide(slide,standard_top,standard_left)
+#         if slide_type == 'cover':
+#             df = extract_cover_data(slide)
+#             # print(0)
+#         elif slide_type == 'month':
+#             df = extract_month_data(slide)
+#             # print(1)
+#         elif slide_type == 'content':
+#             # print("content",count)
+#             df = extract_content_data(slide)
             
-        else:
-            print(4)
-            df = pd.DataFrame([{
-                'category_number': 4,
-                'account_name': None,
-                'error_message': 'No slide content'
-            }])
-        data_frames.append(df)
+#         else:
+#             print(4)
+#             df = pd.DataFrame([{
+#                 'category_number': 4,
+#                 'account_name': None,
+#                 'error_message': 'No slide content'
+#             }])
+#         data_frames.append(df)
         
     
-    result_df = pd.concat(data_frames, ignore_index=True)
-    # print(result_df)
-    return result_df
+#     result_df = pd.concat(data_frames, ignore_index=True)
+#     # print(result_df)
+#     return result_df
 
 def summarize_latest_slides(file_path, ocr, months = None,):
     """
@@ -350,9 +350,9 @@ def summarize_latest_slides(file_path, ocr, months = None,):
     return result_df
 
 
-file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
-file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
-file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
+# file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
+# file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
+# file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path3))
 # summarize_slides(file_path1).to_csv('file1Test1.csv')

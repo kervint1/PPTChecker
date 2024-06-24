@@ -7,6 +7,7 @@ import pandas as pd
 from check import all_checks
 from index import summarize_latest_slides
 import os
+import analysis
 
 def open_files():
     file_paths = filedialog.askopenfilenames(filetypes=[("PowerPoint files", "*.pptx")])
@@ -93,5 +94,6 @@ def create_gui():
     ttk.Checkbutton(frame, text="データ出力有無", variable=output_var).grid(row=3, column=0, sticky=tk.W)
 
     ttk.Button(frame, text="確認", command=confirm_and_process).grid(row=4, column=0, columnspan=2, pady=10)
+    ttk.Button(frame, text="分析", command=analysis.create_analysis_gui).grid(row=5, column=0, columnspan=2, pady=10)
 
     root.mainloop()

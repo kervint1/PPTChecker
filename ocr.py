@@ -25,7 +25,7 @@ os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 
 #     return slides_texts
 
-def get_lp_account_name_message(shape, left=55, top=10, right=200, bottom=70):
+def get_lp_account_name_message(shape, left=85, top=10, right=210, bottom=50):
     shape_texts = None  # 現在のスライドのテキスト
     if shape.shape_type == 13 :# 画像タイプ
         image_stream = io.BytesIO(shape.image.blob)
@@ -36,8 +36,8 @@ def get_lp_account_name_message(shape, left=55, top=10, right=200, bottom=70):
         shape_texts = text
 
         #デバッグ用イメージ保存
-        # temp_path = r"C:\Users\iniad\Documents\adpro\debugpictures\test_image.png"
-        # cropped_image.save(temp_path)
+        temp_path = r"C:\Users\iniad\Documents\adpro\debugpictures\test_image.png"
+        cropped_image.save(temp_path)
     return shape_texts
 
 def get_lp_date_message(file_path, left=55, top=50, right=200, bottom=90, debug_dir=None):
@@ -164,7 +164,7 @@ def test1(filepath,slidenumber,shapenumber):
     
     return get_lp_account_name_message(shape)
 
-# print(test1(file_path3,138,9))
+# print(test1(file_path3,145,1))
 
 # checkplace(file_path1)
-# checkplace2(file_path1,4)
+# checkplace2(file_path3,30)
