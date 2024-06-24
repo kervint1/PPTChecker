@@ -110,7 +110,7 @@ def extract_month_data(slide):
         'error_message': error_message
     }])
 
-def extract_content_data(slide):
+def extract_content_data(slide,ocr):
     """
     内容のスライドからデータを抽出する関数。
     """
@@ -181,7 +181,8 @@ def extract_content_data(slide):
             if (shape.shape_type == 13 and abs(shape.width.pt - ad1_width) < 5):
                 if check_position(shape,strict_permissible,reference_line_top[1],reference_line_left[1]):
                     ad_presence = True
-                    ad_account_name = get_lp_account_name_message(shape)
+                    if(ocr == True):
+                        ad_account_name = get_lp_account_name_message(shape)
                     #145->ADのtop,371=>ADの最大height
                     if shape.top.pt +shape.height.pt > 145 + 371:
                         error_message += "adの高さが大きすぎる," + str(count_objects)
@@ -224,6 +225,7 @@ def extract_content_data(slide):
         'date': date,
         'ad_presence': ad_presence,
         'ad_account_name': ad_account_name,
+        'ad_number_count': ad_number_count,
         'lp_count': lp_count,
         'lp_number_count': lp_number_count,
         'arrow_presence': arrow_presence,
@@ -288,18 +290,64 @@ def summarize_slides(file_path):
     result_df = pd.concat(data_frames, ignore_index=True)
     # print(result_df)
     return result_df
-    
 
-def save_texts_to_excel(texts, filename):
-    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-        for i, (file_name, file_texts) in enumerate(texts):
-            all_texts = []
-            for slide_index, slide_texts in enumerate(file_texts):
-                for text in slide_texts:
-                    all_texts.append({'Slide Number': slide_index + 1, 'Text': text})
-            df = pd.DataFrame(all_texts)
-            if not df.empty:
-                df.to_excel(writer, sheet_name=f'{os.path.splitext(file_name)[0]}', index=False)
+def summarize_latest_slides(file_path, ocr, months = None,):
+    """
+    スライドを分類し、それぞれのデータを取得してpandasでデータフレームにまとめる関数。
+    """
+    slides = Presentation(file_path).slides
+
+    #【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx(少数点以下切り捨て)
+    # 上記のpptでpositionを大まかに決める
+    # 1 4,2 6,3 6
+    LV_position_top = [474,233,3]
+    LV_position_left = [311,109,21]
+    permissible = 20
+    standard_top = []
+    standard_left = []
+    
+    # その初期３スライドのpptの基準を決める
+    for i in range(0, 3):
+        for shape in slides[i].shapes:
+            if (abs(shape.left.pt - LV_position_left[i]) < permissible and
+                abs(shape.top.pt - LV_position_top[i]) < permissible):
+                standard_top.append(round(shape.top.pt, 0))
+                standard_left.append(round(shape.left.pt))
+                break
+
+    if len(standard_top) != 3:
+        print("top3 Slide Error")
+    
+    data_frames = []
+    count = 0
+    month_count = 0
+    
+    for slide in reversed(slides):
+        count += 1
+        slide_type = classify_slide(slide, standard_top, standard_left)
+        if slide_type == 'cover':
+            df = extract_cover_data(slide)
+        elif slide_type == 'month':
+            df = extract_month_data(slide)
+            month_count += 1
+        elif slide_type == 'content':
+            df = extract_content_data(slide,ocr)
+        else:
+            df = pd.DataFrame([{
+                'category_number': 4,
+                'account_name': None,
+                'error_message': ['No slide content']
+            }])
+        
+        data_frames.append(df)
+        if months != None:
+            if month_count == months:
+                break
+
+    data_frames.reverse()
+    
+    result_df = pd.concat(data_frames, ignore_index=True)
+    return result_df
 
 
 file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
@@ -307,5 +355,5 @@ file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウン�
 file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path3))
-summarize_slides(file_path1).to_csv('file1Test1.csv')
-
+# summarize_slides(file_path1).to_csv('file1Test1.csv')
+# print(summarize_latest_slides(file_path1))
