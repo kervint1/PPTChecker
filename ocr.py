@@ -3,19 +3,10 @@ from pptx import Presentation
 from PIL import Image
 import io
 import os
-import sys
 
-# PyInstallerがパスを正しく解決するための設定
-if getattr(sys, 'frozen', False):
-    # PyInstallerでビルドされた一つのファイルの実行可能ファイル内にいる場合
-    base_path = sys._MEIPASS
-else:
-    # 通常のPythonインタプリタで実行されている場合
-    base_path = os.path.abspath(".")
-
-# Tesseractのパス設定
-pytesseract.pytesseract.tesseract_cmd = os.path.join(base_path, 'tesseract', 'tesseract.exe')
-os.environ['TESSDATA_PREFIX'] = os.path.join(base_path, 'tesseract', 'tessdata')
+# 開発用設定
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 
 # def get_lp_account_name_message(file_path, left=55, top=10, right=200, bottom=100):
 #     prs = Presentation(file_path)
