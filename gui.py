@@ -8,6 +8,7 @@ from check import all_checks
 from index import summarize_latest_slides
 import os
 import analysis
+import change_font
 
 def open_files():
     file_paths = filedialog.askopenfilenames(filetypes=[("PowerPoint files", "*.pptx")])
@@ -95,5 +96,8 @@ def create_gui():
 
     ttk.Button(frame, text="確認", command=confirm_and_process).grid(row=4, column=0, columnspan=2, pady=10)
     ttk.Button(frame, text="分析", command=analysis.create_analysis_gui).grid(row=5, column=0, columnspan=2, pady=10)
+
+    # 振り番游ゴシックに変更ボタン
+    ttk.Button(frame, text="振り番游ゴシックに変更", command=change_font.change_font_to_yugothic).grid(row=6, column=0, columnspan=2, pady=10)
 
     root.mainloop()
