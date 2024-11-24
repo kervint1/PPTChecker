@@ -350,9 +350,6 @@ def summarize_latest_slides(file_path, ocr, months = None,):
     return result_df
 
 
-# file_path1 = r"【事例資料】LOUIS VUITTON_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
-# file_path2 = r"【事例資料】ヴァレンティノ_LINE 公式アカウント_メッセージ配信事例_2024年1月以降.pptx"
-# file_path3 = r"【事例資料】ベイクルーズ_LINE 公式アカウント_メッセージ配信_2024年1月以降.pptx"
 # ファイルパスを指定して関数を呼び出し、結果を表示します。
 # print(extract_text_from_pptx_by_slide(file_path3))
 # summarize_slides(file_path1).to_csv('file1Test1.csv')
